@@ -11,17 +11,17 @@ ARG GITHUB_TOKEN
 ENV GITHUB_USER=$GITHUB_USER
 ENV GITHUB_TOKEN=$GITHUB_TOKEN
 
-# Crear settings.xml usando las variables de entorno
+# Crear settings.xml correctamente escapando saltos de línea
 RUN mkdir -p /root/.m2 && \
-    echo "<settings xmlns='http://maven.apache.org/SETTINGS/1.0.0'>
-      <servers>
-        <server>
-          <id>github</id>
-          <username>\${env.GITHUB_USER}</username>
-          <password>\${env.GITHUB_TOKEN}</password>
-        </server>
-      </servers>
-    </settings>" > /root/.m2/settings.xml
+    echo "<settings xmlns='http://maven.apache.org/SETTINGS/1.0.0'>\
+<servers>\
+<server>\
+<id>github</id>\
+<username>\${env.GITHUB_USER}</username>\
+<password>\${env.GITHUB_TOKEN}</password>\
+</server>\
+</servers>\
+</settings>" > /root/.m2/settings.xml
 
 RUN mvn clean package -DskipTests
 
