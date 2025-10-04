@@ -1,23 +1,37 @@
 # Build stage
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
+
 COPY pom.xml .
 COPY src ./src
+
+# Variables de entorno desde build args
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+ENV GITHUB_USER=$GITHUB_USER
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
+
+# Crear settings.xml usando las variables de entorno
+RUN mkdir -p /root/.m2 && \
+    echo "<settings xmlns='http://maven.apache.org/SETTINGS/1.0.0'>
+      <servers>
+        <server>
+          <id>github</id>
+          <username>\${env.GITHUB_USER}</username>
+          <password>\${env.GITHUB_TOKEN}</password>
+        </server>
+      </servers>
+    </settings>" > /root/.m2/settings.xml
+
 RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-
-# Copy the JAR from build stage
 COPY --from=builder /app/target/*.jar app.jar
 
-# Create a non-root user for security
 RUN groupadd -r spring && useradd -r -g spring spring
 USER spring
 
-# Expose port
 EXPOSE 5000
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
