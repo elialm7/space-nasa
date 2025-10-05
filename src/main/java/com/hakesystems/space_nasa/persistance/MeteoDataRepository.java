@@ -18,24 +18,33 @@ public class MeteoDataRepository extends CRUD<MeteoData, Integer> {
 
     public ResponseMeteo getResponseMeteoIfExist(Map<String,Object> meteoData) {
 
-        String sql = """
-                SELECT data as response
+        try {
+            String sql = """
+                
+                    SELECT data as response
                 FROM meteodata
                 WHERE data->>'fecha' = :fecha
                   AND (data->>'lat')::numeric = :lat
                   AND (data->>'lon')::numeric = :lon;
-                """;
+   
 
-        return getConfiguredJdbi().withHandle(
-                handle -> {
+               """;
+
+            return getConfiguredJdbi().withHandle(
+                    handle -> {
                         return handle.createQuery(sql)
                                 .bind("fecha", String.valueOf(meteoData.get("fecha")))
                                 .bind("lat", Float.valueOf(String.valueOf(meteoData.get("lat"))))
                                 .bind("lon", Float.valueOf(String.valueOf(meteoData.get("lon"))))
                                 .map(getCustomRowMapper(ResponseMeteo.class))
                                 .one();
-                }
-        );
+                    }
+            );
+        }catch (Exception e){
+            var data = new ResponseMeteo();
+            data.setResponse(null);
+            return data;
+        }
     }
 
 
