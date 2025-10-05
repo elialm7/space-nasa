@@ -23,4 +23,18 @@ public class ApiMeteoData {
                 Map.of("return", meteoDataRepository.save(meteadoData))
         );
     }
+
+    @GetMapping
+    public ResponseEntity<?> getPredictionWithCache(@RequestParam Map<String,Object> meteoData) {
+
+
+
+        return ResponseEntity.ok(meteoDataRepository.getResponseMeteoIfExist(meteoData));
+    }
+
+
+
+
+
+
 }
